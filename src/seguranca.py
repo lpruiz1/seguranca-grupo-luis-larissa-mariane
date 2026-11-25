@@ -6,13 +6,18 @@ import sys
 from pathlib import Path
 
 from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+from cryptography.exceptions import InvalidSignature
+from cryptography.hazmat.primitives.asymmetric.ed25519 import (
+    Ed25519PrivateKey,
+    Ed25519PublicKey,
+)
 
 EXIT_OK = 0
 EXIT_FAIL = 1   # verificação falhou (hash divergente/assinatura inválida)
 EXIT_ERROR = 2  # erro de uso, arquivo, chave etc
 
 HEX64 = re.compile(r"^[0-9a-fA-F]{64}$")
+SIG_LEN = 64
 
 
 class ToolError(Exception):
@@ -66,6 +71,16 @@ def load_private_key(path: str) -> Ed25519PrivateKey:
         raise ToolError(f"a chave privada não é Ed25519: {path}")
     return key
 
+def load_public_key(path: str) -> Ed25519PublicKey:
+    data = read_bytes(path)
+    try:
+        key = serialization.load_pem_public_key(data)
+    except ValueError as e:
+        raise ToolError(f"chave pública inválida (esperado PEM SubjectPublicKeyInfo): {path}") from e
+    if not isinstance(key, Ed25519PublicKey):
+        raise ToolError(f"a chave pública não é Ed25519: {path}")
+    return key
+
 # ---------- comandos ----------
 
 def cmd_keygen(args) -> int:
@@ -113,9 +128,24 @@ def cmd_check(args) -> int:
 def cmd_sign(args) -> int:
     data = read_bytes(args.arquivo)
     key = load_private_key(args.chave_privada)
-    sig = key.sign(data)
+    sig = key.sign(data) # Ed25519 puro: assina os bytes originais, sem pré-hash
     write_bytes(args.assinatura, sig)
     print(f"Assinatura gerada: {args.assinatura}")
+    return EXIT_OK
+
+def cmd_verify(args) -> int:
+    data = read_bytes(args.arquivo)
+    key = load_public_key(args.chave_publica)
+    sig = read_bytes(args.assinatura)
+    if len(sig) != SIG_LEN:
+        print(f"INVÁLIDA: assinatura deve ter {SIG_LEN} bytes (encontrado {len(sig)})")
+        return EXIT_FAIL
+    try:
+        key.verify(sig, data)
+    except InvalidSignature:
+        print("INVÁLIDA: a assinatura não confere com o arquivo e a chave pública")
+        return EXIT_FAIL
+    print("VÁLIDA: a assinatura confere com o arquivo e a chave pública")
     return EXIT_OK
 
 def build_parser() -> argparse.ArgumentParser:
@@ -144,6 +174,13 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("chave_privada")
     s.add_argument("assinatura")
     s.set_defaults(func=cmd_sign)
+
+    s = sub.add_parser("verify", help="verifica assinatura com chave pública")
+    s.add_argument("arquivo")
+    s.add_argument("chave_publica")
+    s.add_argument("assinatura")
+    s.set_defaults(func=cmd_verify)
+    
     return p
 
 
