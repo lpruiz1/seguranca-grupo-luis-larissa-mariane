@@ -56,6 +56,15 @@ def sha256_file(path: str) -> str:
         raise ToolError(f"não foi possível ler '{path}': {e.strerror}") from e
     return h.hexdigest()
 
+def load_private_key(path: str) -> Ed25519PrivateKey:
+    data = read_bytes(path)
+    try:
+        key = serialization.load_pem_private_key(data, password=None)
+    except (ValueError, TypeError) as e:
+        raise ToolError(f"chave privada inválida ou protegida por senha: {path}") from e
+    if not isinstance(key, Ed25519PrivateKey):
+        raise ToolError(f"a chave privada não é Ed25519: {path}")
+    return key
 
 # ---------- comandos ----------
 
@@ -101,6 +110,13 @@ def cmd_check(args) -> int:
     print(f"  referência: {ref.lower()}")
     return EXIT_FAIL
 
+def cmd_sign(args) -> int:
+    data = read_bytes(args.arquivo)
+    key = load_private_key(args.chave_privada)
+    sig = key.sign(data)
+    write_bytes(args.assinatura, sig)
+    print(f"Assinatura gerada: {args.assinatura}")
+    return EXIT_OK
 
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
@@ -122,6 +138,12 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("arquivo")
     s.add_argument("hash_referencia")
     s.set_defaults(func=cmd_check)
+
+    s = sub.add_parser("sign", help="assina um arquivo com chave privada")
+    s.add_argument("arquivo")
+    s.add_argument("chave_privada")
+    s.add_argument("assinatura")
+    s.set_defaults(func=cmd_sign)
     return p
 
 
