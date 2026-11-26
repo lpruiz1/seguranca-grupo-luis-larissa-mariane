@@ -1,4 +1,5 @@
 import hashlib
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -17,7 +18,8 @@ CONTEUDO = b"Declaracao ficticia: Fulano de Tal concluiu o curso XYZ.\n"
 def run(*args):
     return subprocess.run(
         [sys.executable, str(CLI), *map(str, args)],
-        capture_output=True, text=True,
+        capture_output=True, text=True, encoding="utf-8",
+        env={**os.environ, "PYTHONIOENCODING": "utf-8"},
     )
 
 
