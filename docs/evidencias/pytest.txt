@@ -1,0 +1,20 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.11.0, pytest-9.2.0, pluggy-1.7.0 -- /Users/marianeoliveira/projeto_seguranca/seguranca-grupo-luis-larissa-mariane/venv/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/marianeoliveira/projeto_seguranca/seguranca-grupo-luis-larissa-mariane
+collecting ... collected 12 items
+
+tests/test_seguranca.py::test_ti01_hash_correto PASSED                   [  8%]
+tests/test_seguranca.py::test_ti02_arquivo_modificado_diverge PASSED     [ 16%]
+tests/test_seguranca.py::test_ti03_pem_validos PASSED                    [ 25%]
+tests/test_seguranca.py::test_ti04_assina_e_verifica PASSED              [ 33%]
+tests/test_seguranca.py::test_ti05_alteracao_apos_assinatura PASSED      [ 41%]
+tests/test_seguranca.py::test_ti06_outra_chave_publica PASSED            [ 50%]
+tests/test_seguranca.py::test_interop_assinatura_bytes_originais PASSED  [ 58%]
+tests/test_seguranca.py::test_erro_arquivo_inexistente PASSED            [ 66%]
+tests/test_seguranca.py::test_erro_hash_referencia_malformado PASSED     [ 75%]
+tests/test_seguranca.py::test_erro_chave_trocada PASSED                  [ 83%]
+tests/test_seguranca.py::test_erro_assinatura_tamanho_errado PASSED      [ 91%]
+tests/test_seguranca.py::test_erro_diretorio_como_arquivo PASSED         [100%]
+
+============================== 12 passed in 1.53s ==============================
