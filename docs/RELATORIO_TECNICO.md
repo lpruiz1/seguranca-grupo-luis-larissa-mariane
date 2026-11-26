@@ -2,7 +2,7 @@
 
 ## 1. Identificação
 
-- **Integrantes:** Luís Phillipe Ruiz Gama, Larissa Ribeiro Savino, Mariane Oliveira dos Santos
+- **Integrantes:** Luís Phillipe Ruiz Gama, Larissa Ribeiro Savino, Mariane dos Santos Oliveira
 - **Turma:** 5
 - **Linguagem:** Python 3
 - **Repositório:** https://github.com/lpruiz1/seguranca-grupo-luis-larissa-mariane
